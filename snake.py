@@ -5,6 +5,17 @@
 import sublime
 import sublime_plugin
 
+
+def convert_hex_to_ascii(h):
+    chars_in_reverse = []
+    while h != 0x0:
+        chars_in_reverse.append(chr(h & 0xFF))
+        h = h >> 8
+
+    chars_in_reverse.reverse()
+    return ''.join(chars_in_reverse)
+
+
 # GLOBAL SETTINGS
 SNAKE_ON = False
 SNAKE_DIRECTION = 'right'
@@ -26,6 +37,14 @@ SNAKE_TAIL_LEFT = u"\u25BA"
 SNAKE_TAIL_RIGHT = u"\u25C4"
 SNAKE_TAIL_UP = u"\u25BC"
 SNAKE_TAIL_DOWN = u"\u25B2"
+
+# WALL GRAPHICS
+WALL_HORIZONTAL = u"\u2500"
+WALL_VERTICAL = u"\u2502"
+WALL_BOTTOM_LEFT = u"\u2570"
+WALL_BOTTOM_RIGHT = u"\u256F"
+WALL_TOP_LEFT = u"\u250D"
+WALL_TOP_RIGHT = u"\u256E"
 
 
 # OVERWRITE ARROW KEYS - but pass through to old commands
@@ -81,6 +100,7 @@ class SnakeCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         global SNAKE_ON, SNAKE_SCORE, SNAKE_X_BOUNDARY, SNAKE_Y_BOUNDARY
         global SNAKE_DIRECTION, SNAKE_INTENDED_DIRECTION, SNAKE_GROWTH_PROGRESS
+        global WALL_HORIZONTAL, WALL_BOTTOM_LEFT, WALL_BOTTOM_RIGHT
 
         # reset stuff
         SNAKE_SCORE = 0
@@ -155,7 +175,18 @@ class SnakeCommand(sublime_plugin.TextCommand):
             totalPaddingOffset = 0
             for line in lines:
                 paddingSize = (maxLineLength - line.size()) + 1
-                paddingString = (" " * (paddingSize - 1)) + "|"
+                paddingString = (" " * (paddingSize - 1)) + WALL_VERTICAL
+                snakeView.insert(edit,
+                                line.b + totalPaddingOffset,
+                                paddingString)
+                totalPaddingOffset = totalPaddingOffset + paddingSize
+            snakeView.end_edit(edit)
+
+            edit = snakeView.begin_edit()
+            totalPaddingOffset = 0
+            for line in lines:
+                paddingSize = (maxLineLength - line.size()) + 1
+                paddingString = (" " * (paddingSize - 1)) + WALL_VERTICAL
                 snakeView.insert(edit,
                                 line.b + totalPaddingOffset,
                                 paddingString)
@@ -170,7 +201,9 @@ class SnakeCommand(sublime_plugin.TextCommand):
             edit = snakeView.begin_edit()
             SNAKE_Y_BOUNDARY = maxLineLength
             SNAKE_X_BOUNDARY = len(lines)
-            bottomBorder = ("_" * maxLineLength) + "|\n"
+            topBorder = WALL_TOP_LEFT + (WALL_HORIZONTAL * maxLineLength) + WALL_TOP_RIGHT + "\n"
+            bottomBorder = WALL_BOTTOM_LEFT + (WALL_HORIZONTAL * maxLineLength) + WALL_BOTTOM_RIGHT + "\n"
+            snakeView.insert(edit, 0, topBorder)
             snakeView.insert(edit, snakeView.size(), bottomBorder)
             snakeView.end_edit(edit)
 
