@@ -39,6 +39,12 @@ SNAKE_TAIL_UP = u"\u25BC"
 SNAKE_TAIL_DOWN = u"\u25B2"
 
 # WALL GRAPHICS
+# ┍  -  0x250D
+# ─  -  0x2500
+# ╮  -  0x256E
+# │  -  0x2502
+# ╰  -  0x2570
+# ╯  -  0x256F
 WALL_HORIZONTAL = u"\u2500"
 WALL_VERTICAL = u"\u2502"
 WALL_BOTTOM_LEFT = u"\u2570"
@@ -175,7 +181,7 @@ class SnakeCommand(sublime_plugin.TextCommand):
             totalPaddingOffset = 0
             for line in lines:
                 paddingSize = (maxLineLength - line.size()) + 1
-                paddingString = (" " * (paddingSize - 1)) + WALL_VERTICAL
+                paddingString = (" " * (paddingSize - 1)) + WALL_VERTICAL + "x"
                 snakeView.insert(edit,
                                 line.b + totalPaddingOffset,
                                 paddingString)
